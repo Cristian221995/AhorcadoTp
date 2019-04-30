@@ -48,57 +48,70 @@ public class Jugador extends Thread {
         this.vidas = vidas;
     }
 
+    /**
+     * Genera una letra random
+     * @return
+     */
     public String getLetraRandom(){
         String array []= {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
         String letra = array[(int)(Math.random()*25)];
         return letra;
     }
 
-    public void intentar(){
-        Juego.setEjecucion(false);
-        //String palabra = "hola";
-
-        int indice = Conectar.getCantidadPalabras();
-        String palabra = Conectar.getPalabra((int) (Math.random() * indice) + 1);
-        System.out.println("-------Palabra: " + palabra + "-------");
-
-        String letra = this.getLetraRandom();
-
-        if(letrasUsadas.contains(letra)){
-            while(letrasUsadas.contains(letra)){
-                letra = this.getLetraRandom();
+    /**
+     * Segun lo retornado por el metodo jugar() de la clase juego, lanza los print con el avance del juego
+     */
+    public synchronized void intentar(){
+        if(!Juego.getEjecucion()){
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }else{
-            int resultado = Juego.jugar(palabra, letra);
-            if(resultado == 0){
-                System.out.println(this.getNombre() + " no acerto la letra " + letra);
-                this.vidas --;
-            }else if(resultado == 1){
-                System.out.println(this.getNombre() + " acerto la letra " + letra);
-            }else if(resultado == 2){
-                System.out.println(this.getNombre() + " acerto la letra " + letra + " y adivino la palabra, gano el juego!!");
-                this.vidas = 0;
-                Conectar.setGanador(this.nombre,palabra);
+            Juego.setEjecucion(false);
+
+            String letra = this.getLetraRandom();
+
+            if(letrasUsadas.contains(letra)){
+                while(letrasUsadas.contains(letra)){
+                    letra = this.getLetraRandom();
+                }
+            }else{
+                System.out.println("\n-------Palabra: " + Juego.getPalabraBuscada() + "-------");
+                int resultado = Juego.jugar(Juego.getPalabraBuscada(), letra);
+                if(resultado == 0){
+                    System.out.println(this.getNombre() + " no acerto la letra " + letra);
+                    this.vidas --;
+                }else if(resultado == 1){
+                    System.out.println(this.getNombre() + " acerto la letra " + letra);
+                }else if(resultado == 2){
+                    System.out.println(this.getNombre() + " acerto la letra " + letra + " y adivino la palabra, gano el juego!!");
+                    this.vidas = 0;
+                    Conectar.setGanador(this.nombre,Juego.getPalabraBuscada());
+                }
+                letrasUsadas.add(letra);
+                System.out.println("Letras encontradas: " + Juego.arrayGanador);
+                System.out.println("Letras usadas: " + letrasUsadas);
             }
-            letrasUsadas.add(letra);
+            Juego.setEjecucion(true);
+
         }
-        Juego.setEjecucion(true);
-        System.out.println(letrasUsadas);
+        notifyAll();
     }
 
     @Override
-    public synchronized void run() {
+    public void run() {
 
         while (vidas>0 && Juego.getGanador()){
-            if(!Juego.getEjecucion()){
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            synchronized (this){
+                this.intentar();
             }
-            this.intentar();
-            this.notifyAll();
+            try {
+                sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
     }

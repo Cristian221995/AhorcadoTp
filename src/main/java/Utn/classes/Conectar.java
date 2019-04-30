@@ -11,9 +11,10 @@ public class Conectar {
     static String user = "root";
     static String pass = "";
 
-    public Conectar() {
-    }
-
+    /**
+     * Muestra todas las palabras cargadas en la base de datos
+     * @param query
+     */
     public static void mostrarPalabras(String query) {
 
         try {
@@ -34,6 +35,11 @@ public class Conectar {
         }
     }
 
+    /**
+     * Trae una palabra de la base de datos segun un indice
+     * @param indice
+     * @return
+     */
     public static String getPalabra(int indice){
         String word = null;
         try{
@@ -55,6 +61,10 @@ public class Conectar {
         return word;
     }
 
+    /**
+     * Trae la cantidad de palabras cargadas en la base de datos par luego hacer un rand de ese numero y traer una palabra random
+     * @return
+     */
     public static int getCantidadPalabras(){
         int cantidad = 0;
         try {
@@ -75,6 +85,11 @@ public class Conectar {
         return cantidad;
     }
 
+    /**
+     * Carga un ganador en la base de datos
+     * @param nombre
+     * @param palabra
+     */
     public static void setGanador(String nombre, String palabra){
         try {
             conn = DriverManager.getConnection(url + dbName, user, pass);
@@ -91,6 +106,11 @@ public class Conectar {
         }
     }
 
+    /**
+     * Retorna el id de una palabra, que luego se usa para guardar en la tabla ganadores
+     * @param palabraBuscada
+     * @return
+     */
     private static int getId(String palabraBuscada){
         int id = 0;
         try {
